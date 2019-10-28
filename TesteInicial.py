@@ -13,12 +13,12 @@ def loadDataDf():
     # Dados iniciais
     res = query_job.to_dataframe()
     
-    res['id'] = res.int64_field_0
-    res['data'] = res.date_field_1
-    res['vlrpago'] = res.string_field_2.apply(lambda x: float(x[2:].replace(',','.')))
-    res['Plano'] = res.string_field_3
-    res['TipoPlano'] = res.string_field_3.apply(lambda x:x.split('/')[0])
-    res['MesesPlano'] = res.string_field_3.apply(lambda x:x.split('/')[1])
+    res['id'] = res.int64_field_0                                                      #Id
+    res['data'] = res.date_field_1                                                     #Data
+    res['vlrpago'] = res.string_field_2.apply(lambda x: float(x[2:].replace(',','.'))) #valor pago
+    res['Plano'] = res.string_field_3                                                  #Plano
+    res['TipoPlano'] = res.string_field_3.apply(lambda x:x.split('/')[0])              #TipoDoPlano 
+    res['MesesPlano'] = res.string_field_3.apply(lambda x:x.split('/')[1])             # Meses Plano
     res.data = pd.to_datetime(res.data)
     res['mes'] = res.data.apply(lambda x: x.month)
     res['dia'] = res.data.apply(lambda x: x.day)
