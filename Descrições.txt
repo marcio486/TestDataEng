@@ -1,0 +1,42 @@
+Todos os painéis obedecem os seguintes filtros -> DATA, SEGMENTO, ESTADO, CIDADE E NOME
+Em todos os painéis é possível filtrar qualquer valor que seja desejado para análise.
+Os dados a partir do mês 08/2019 são valores ainda a serem recebidos (pois não existem novas contratações após 07/209)
+
+Painel 1/9  -> Resultados Gerais com Filtros
+1.Tabela 1  -> Resultado gerais possuindo todos os meses com os dados MRR,Contraction,Canceled,Expansion,Ressurection,Ativos,Bronze,Prata,Ouro e platina
+2.Gráfico 1 -> Evolução de MRR através dos meses
+3.Gráfico 2 -> Evolução de usuários ativos e com plano bronze/prata/ouro/platina através dos meses
+
+Painel 2/9  -> Resultados Expansion/Ressurection
+1.Gráfico 3 -> Evolução do parâmetro Expansionatravés dos meses
+2.Gráfico 4 -> Evolução do parâmetro Ressurection através dos meses
+
+Painel 3/9  -> Resultados Cancelled/Contraction
+1.Gráfico 5 -> Evolução do parâmetro Cancelled  através dos meses
+2.Gráfico 6 -> Evolução do parâmetro Contraction através dos meses
+
+Painel 4/9  -> Resultados Gerais Estado/Cidade
+1.Mapa 1    -> Distribuição do parâmetro MRR pelos estados brasileiros
+2.Gráfico 7 -> Distribuição do parâmetro MRR pelos estados brasileiros
+3.Gráfico 8 -> Distribuição de clientes ativos pelos estos brasileiros
+
+Painel 5/9  -> Resultados Gerais Estado/Cidade 2
+1.Gráfico 9 -> Evolução do parâmetro MRR por mês comparando múltiplos estados
+2.Gráfico 10-> Evolução do parâmetro MRR por mês comparando múltiplas cidades
+
+Painel 6/9  -> Resultados Gerais Estado/Cidade 3
+1.Gráfico 11-> Distribuição dos planos bronze/prata/ouro/platina por estado
+2.Gráfico 12-> Distribuição dos parâmetros Canceled/Ressurection/Contraction por estado
+3.Gráfico 13-> Evolução de clientes ativos através dos meses por estado
+
+Painel 7/9  -> Resultados Gerais por segmento
+1.Gráfico 14-> Distribuição do parâmetro MRR por segmento
+2.Gráfico 15-> Distribuição dos parâmetros Canceled/Ressurection/Contraction por segmento
+3.Gráfico 16-> Evolução de clientes ativos por mês por segmento
+
+Painel 8/9  -> Resultados Gerais por segmento 2
+1.Gráfico 17-> Distribuição de clientes com planos bronze/prata/ouro/platina por segmento
+2.Gráfico 18-> Evolução de vendas do plano Platina atráves dos meses
+
+Painel 9/9  -> Clientes
+1.Tabela 2  -> Distribuição geral dos clientes, possível analise os melhores/piores clientes
