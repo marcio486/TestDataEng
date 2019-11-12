@@ -96,9 +96,9 @@ def loadClientsInfo():
 
 #%%
     
-def formatAndExportToBg(loadedDfFormated,clientsInfo):
+def finalFormat(loadedDfFormated,clientsInfo):
     aux = ''
-    exportedDf = pd.DataFrame()
+    exportDf = pd.DataFrame()
     #df2 = pd.DataFrame()
     for count,colun in enumerate(loadedDfFormated.columns):
        
@@ -149,27 +149,36 @@ def formatAndExportToBg(loadedDfFormated,clientsInfo):
             df.Expansion = df.Expansion.astype('int64')
             df.Canceled = df.Canceled.astype('int64')
             df.aux = df.aux.astype('int64')
-            
-            if chosen_month == 'Mt_9_2016': df.to_gbq(destination_table ='COnjuntoTeste.DadosMesesClientesSaaS',project_id ='projetoteste-256620',if_exists = 'replace')
-            else: df.to_gbq(destination_table ='COnjuntoTeste.DadosMesesClientesSaaS',project_id ='projetoteste-256620',if_exists = 'append')
-            exportedDf = exportedDf.append(df)
+
+            exportDf = exportDf.append(df)
             #d = {'mesAno':' '.join(chosen_month.split('_')[1:3]),'MRR':df.MRR.sum(),'Expansion':df.Expansion.sum(),'Contraction':df.Contraction.sum(),'Canceled':df.Canceled.sum(),'TotalAnt':df.aux.sum(),'Ressurection':df.Ressurection.sum(),'Ativos':df.Ativos.sum()}
             #df2 = df2.append(pd.DataFrame(data =d,index = [colun]))
             aux = colun
-    exportedDf.to_csv('exportedDf.csv')    
-#%%            
+    return exportDf
+    
+def exportToBg(exportDf):
+    exportDf.to_gbq(destination_table ='COnjuntoTeste.DadosMesesClientesSaaS',project_id ='projetoteste-256620',if_exists = 'replace')
+#%%       
+    
 if __name__ == '__main__':  
     res =  pd.read_csv('Pagamentos.csv',header =None,names = ['id','data','valorPago','tipoPlano'])      
     loadedDf = loadDataDf(res)
-
-    loadedDfFormated = formatDataDf(loadedDf)
-    clientsInfo = loadClientsInfo()
-    formatAndExportToBg(loadedDfFormated,clientsInfo)
+    loadedDf.to_csv('loadedDf.csv',index=False)
     
+    loadedDfFormated = formatDataDf(loadedDf)
+    loadedDfFormated.to_csv('loadedDfFormated.csv',index=False)
+    
+    clientsInfo = loadClientsInfo()
+    clientsInfo.to_csv('clientsInfo.csv',index=False)
+    
+    exportDf = finalFormat(loadedDfFormated,clientsInfo).reset_index()
+    exportDf.to_csv('exportDf.csv',index=False) 
+    
+    exportToBg(exportDf)
     #usado nos testes
-    #loadedDf.to_csv('loadedDf.csv')
-    #loadedDfFormatted.to_csv('loadedDfFormatted.csv')
-    #clientsInfo.to_csv('clientsInfo.csv')
+   
+    
+    
 
 
 
