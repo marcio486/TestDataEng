@@ -5,8 +5,7 @@ import requests
 #os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="ProjetoTeste-b0a2e18f5677.json"
 #%%
 def loadDataDf(res):
-    '''Carrega dados do CSV e cria/formata alguns campos '''
-
+    '''cria/formata alguns campos iniciais'''
     res['vlrpago'] = res.valorPago.apply(lambda x: float(x[2:].replace(',','.'))) 
     res['TipoPlano'] = res.tipoPlano.apply(lambda x:x.split('/')[0]) 
     res['MesesPlano'] = res.tipoPlano.apply(lambda x:x.split('/')[1])
