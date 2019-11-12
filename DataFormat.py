@@ -154,7 +154,7 @@ def finalFormat(loadedDfFormated,clientsInfo):
             #d = {'mesAno':' '.join(chosen_month.split('_')[1:3]),'MRR':df.MRR.sum(),'Expansion':df.Expansion.sum(),'Contraction':df.Contraction.sum(),'Canceled':df.Canceled.sum(),'TotalAnt':df.aux.sum(),'Ressurection':df.Ressurection.sum(),'Ativos':df.Ativos.sum()}
             #df2 = df2.append(pd.DataFrame(data =d,index = [colun]))
             aux = colun
-    return exportDf
+    return exportDf.reset_index()
     
 def exportToBg(exportDf):
     exportDf.to_gbq(destination_table ='COnjuntoTeste.DadosMesesClientesSaaS',project_id ='projetoteste-256620',if_exists = 'replace')
@@ -171,7 +171,7 @@ if __name__ == '__main__':
     clientsInfo = loadClientsInfo()
     clientsInfo.to_csv('clientsInfo.csv',index=False)
     
-    exportDf = finalFormat(loadedDfFormated,clientsInfo).reset_index()
+    exportDf = finalFormat(loadedDfFormated,clientsInfo)
     exportDf.to_csv('exportDf.csv',index=False) 
     
     exportToBg(exportDf)
