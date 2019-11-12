@@ -96,10 +96,11 @@ def loadClientsInfo():
 
 #%%
     
-def formatAndExportToBg(startDF,clientsInfo):
+def formatAndExportToBg(loadedDfFormated,clientsInfo):
     aux = ''
+    exportedDf = pd.DataFrame()
     #df2 = pd.DataFrame()
-    for count,colun in enumerate(startDf.columns):
+    for count,colun in enumerate(loadedDfFormated.columns):
        
         if colun == 'Mt_8_2016' :
             aux = colun
@@ -110,21 +111,21 @@ def formatAndExportToBg(startDF,clientsInfo):
            
            
             df = pd.DataFrame()
-            df['id'] = startDf.id.unique()
+            df['id'] = loadedDfFormated.id.unique()
             df = df.set_index('id').sort_index()
-            df['MRR'] = startDf[chosen_month]
-            df['Expansion'] = (startDf[chosen_month] - startDf[back_month]).apply(lambda x: x if x > 0 else 0)
-            df['Contraction'] = (startDf[chosen_month] - startDf[back_month]).apply(lambda x: x if x < 0 else 0)
-            df['Canceled'] = np.where(startDf[chosen_month] == 0,startDf[back_month],0)
+            df['MRR'] = loadedDfFormated[chosen_month]
+            df['Expansion'] = (loadedDfFormated[chosen_month] - loadedDfFormated[back_month]).apply(lambda x: x if x > 0 else 0)
+            df['Contraction'] = (loadedDfFormated[chosen_month] - loadedDfFormated[back_month]).apply(lambda x: x if x < 0 else 0)
+            df['Canceled'] = np.where(loadedDfFormated[chosen_month] == 0,loadedDfFormated[back_month],0)
            
             df['aux'] = 0
     
-            for col in startDf.iteritems():            # verificar se existem vendas anteriores
+            for col in loadedDfFormated.iteritems():            # verificar se existem vendas anteriores
                 if col[0] == back_month: break
                 elif 'Mt_' in col[0]:
                     df['aux'] = df['aux'] + col[1].reindex(df.index)
                
-            df['Ressurection'] = np.where(startDf[back_month] == 0,startDf[chosen_month],0)
+            df['Ressurection'] = np.where(loadedDfFormated[back_month] == 0,loadedDfFormated[chosen_month],0)
             df['Ressurection'] = np.where(df['aux'] == 0,0,df['Ressurection'])
             df['Contraction'] = -np.where(df['Canceled'] == 0,df['Contraction'],0)
             df['Ativos'] = df.MRR.apply(lambda x: 1 if x > 0 else 0)
@@ -136,10 +137,10 @@ def formatAndExportToBg(startDF,clientsInfo):
             df['nome'] = clientsInfo.nome
             df['segmento'] = clientsInfo.segmento
             
-            df['bronze'] = startDf[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Bronze' else 0)
-            df['prata'] = startDf[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Prata' else 0)
-            df['ouro'] = startDf[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Ouro' else 0)
-            df['platina'] = startDf[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Platina' else 0)
+            df['bronze'] = loadedDfFormated[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Bronze' else 0)
+            df['prata'] = loadedDfFormated[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Prata' else 0)
+            df['ouro'] = loadedDfFormated[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Ouro' else 0)
+            df['platina'] = loadedDfFormated[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Platina' else 0)
     
             df = df.reset_index()
             df.Ressurection = df.Ressurection.astype('int64')
@@ -151,17 +152,24 @@ def formatAndExportToBg(startDF,clientsInfo):
             
             if chosen_month == 'Mt_9_2016': df.to_gbq(destination_table ='COnjuntoTeste.DadosMesesClientesSaaS',project_id ='projetoteste-256620',if_exists = 'replace')
             else: df.to_gbq(destination_table ='COnjuntoTeste.DadosMesesClientesSaaS',project_id ='projetoteste-256620',if_exists = 'append')
-    
+            exportedDf = exportedDf.append(df)
             #d = {'mesAno':' '.join(chosen_month.split('_')[1:3]),'MRR':df.MRR.sum(),'Expansion':df.Expansion.sum(),'Contraction':df.Contraction.sum(),'Canceled':df.Canceled.sum(),'TotalAnt':df.aux.sum(),'Ressurection':df.Ressurection.sum(),'Ativos':df.Ativos.sum()}
             #df2 = df2.append(pd.DataFrame(data =d,index = [colun]))
             aux = colun
+    exportedDf.to_csv('exportedDf.csv')    
 #%%            
 if __name__ == '__main__':  
     res =  pd.read_csv('Pagamentos.csv',header =None,names = ['id','data','valorPago','tipoPlano'])      
-    startDf = loadDataDf(res)
-    startDf = formatDataDf(startDf)
+    loadedDf = loadDataDf(res)
+
+    loadedDfFormated = formatDataDf(loadedDf)
     clientsInfo = loadClientsInfo()
-    formatAndExportToBg(startDf,clientsInfo)
+    formatAndExportToBg(loadedDfFormated,clientsInfo)
+    
+    #usado nos testes
+    #loadedDf.to_csv('loadedDf.csv')
+    #loadedDfFormatted.to_csv('loadedDfFormatted.csv')
+    #clientsInfo.to_csv('clientsInfo.csv')
 
 
 
