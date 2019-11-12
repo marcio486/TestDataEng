@@ -6,15 +6,39 @@ import requests
 def loadDataDf():
     
     res =  pd.read_csv('Pagamentos.csv',header =None,names = ['id','data','valorPago','tipoPlano'])
-                                                     #Id                                                   #Data
-    res['vlrpago'] = res.valorPago.apply(lambda x: float(x[2:].replace(',','.'))) #valor pago                                                 #Plano
-    res['TipoPlano'] = res.tipoPlano.apply(lambda x:x.split('/')[0])              #TipoDoPlano 
-    res['MesesPlano'] = res.tipoPlano.apply(lambda x:x.split('/')[1])             # Meses Plano
+
+    res['vlrpago'] = res.valorPago.apply(lambda x: float(x[2:].replace(',','.'))) 
+    res['TipoPlano'] = res.tipoPlano.apply(lambda x:x.split('/')[0]) 
+    res['MesesPlano'] = res.tipoPlano.apply(lambda x:x.split('/')[1])
     res['data'] = pd.to_datetime(res.data,dayfirst=True)
     res['mes'] = res.data.apply(lambda x: x.month)
     res['dia'] = res.data.apply(lambda x: x.day)
     res['ano'] = res.data.apply(lambda x: x.year)
     return res
+
+def formatCl(keyC,ComprasCliente,cl):
+    for l in range(0,int(ComprasCliente.MesesPlano)):
+        x = (ComprasCliente.mes+l)%12
+        if x == 0 : x = 12
+        if ComprasCliente.mes+l >= 13:
+            try:
+                cl.at[keyC,'Mt_'+str(x)+'_'+str(ComprasCliente.ano+1)] = ComprasCliente.vlrpago/int(ComprasCliente.MesesPlano) + [cl.at[keyC,str(x)+'/'+str(ComprasCliente.ano+1)]][0]
+            except:
+                cl.at[keyC,'Mt_'+str(x)+'_'+str(ComprasCliente.ano+1)] = ComprasCliente.vlrpago/int(ComprasCliente.MesesPlano)
+            try:
+                cl.at[keyC,'Tipo_'+str(x)+'_'+str(ComprasCliente.ano+1)] = ComprasCliente.TipoPlano + cl.at[keyC,str(x)+'/'+str(ComprasCliente.ano+1)+' Tipo'][0]
+            except:
+                cl.at[keyC,'Tipo_'+str(x)+'_'+str(ComprasCliente.ano+1)] = ComprasCliente.TipoPlano
+        else:
+            try:
+                cl.at[keyC,'Mt_'+str(x)+'_'+str(ComprasCliente.ano)] = ComprasCliente.vlrpago/int(ComprasCliente.MesesPlano) + cl.at[keyC,str(x)+'/'+str(ComprasCliente.ano)][0]
+            except:
+                cl.at[keyC,'Mt_'+str(x)+'_'+str(ComprasCliente.ano)] = ComprasCliente.vlrpago/int(ComprasCliente.MesesPlano)
+            try:
+                cl.at[keyC,'Tipo_'+str(x)+'_'+str(ComprasCliente.ano)] = ComprasCliente.TipoPlano + cl.at[keyC,str(x)+'/'+str(ComprasCliente.ano)+' Tipo'] [0]
+            except:
+                cl.at[keyC,'Tipo_'+str(x)+'_'+str(ComprasCliente.ano)] = ComprasCliente.TipoPlano
+    return cl
 
 def formatDataDf(startDf):
     cl = pd.DataFrame()
@@ -43,27 +67,8 @@ def formatDataDf(startDf):
     for keyC in gbc.groups.keys():
         grupoC = gbc.get_group(keyC)
         for i in grupoC.iterrows():
-            for l in range(0,int(i[1][6])):
-                x = (i[1][7]+l)%12
-                if x == 0 : x = 12
-                if i[1][7]+l >= 13:
-                    try:
-                        cl.at[keyC,'Mt_'+str(x)+'_'+str(i[1][9]+1)] = i[1][4]/int(i[1][6]) + [cl.at[keyC,str(x)+'/'+str(i[1][9]+1)]][0]
-                    except:
-                        cl.at[keyC,'Mt_'+str(x)+'_'+str(i[1][9]+1)] = i[1][4]/int(i[1][6])
-                    try:
-                        cl.at[keyC,'Tipo_'+str(x)+'_'+str(i[1][9]+1)] = i[1][5] + cl.at[keyC,str(x)+'/'+str(i[1][9]+1)+' Tipo'][0]
-                    except:
-                        cl.at[keyC,'Tipo_'+str(x)+'_'+str(i[1][9]+1)] = i[1][5]
-                else:
-                    try:
-                        cl.at[keyC,'Mt_'+str(x)+'_'+str(i[1][9])] = i[1][4]/int(i[1][6]) + cl.at[keyC,str(x)+'/'+str(i[1][9])][0]
-                    except:
-                        cl.at[keyC,'Mt_'+str(x)+'_'+str(i[1][9])] = i[1][4]/int(i[1][6])
-                    try:
-                        cl.at[keyC,'Tipo_'+str(x)+'_'+str(i[1][9])] = i[1][5] + cl.at[keyC,str(x)+'/'+str(i[1][9])+' Tipo'] [0]
-                    except:
-                        cl.at[keyC,'Tipo_'+str(x)+'_'+str(i[1][9])] = i[1][5]
+            ComprasCliente = i[1]
+            cl = formatCl(keyC,ComprasCliente,cl)    
 
     for col in cl.columns:
         if 'Tipo' in col: cl[col]= cl[col].fillna('')
