@@ -68,7 +68,7 @@ def formatDataDf(startDf):
         grupoC = gbc.get_group(keyC)
         for i in grupoC.iterrows():
             ComprasCliente = i[1]
-            cl = formatCl(keyC,ComprasCliente,cl)    
+            cl = formatCl(keyC,ComprasCliente,cl)#Popular colunas com valores de compras formatados
 
     for col in cl.columns:
         if 'Tipo' in col: cl[col]= cl[col].fillna('')
