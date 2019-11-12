@@ -4,9 +4,8 @@ import requests
 
 #os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="ProjetoTeste-b0a2e18f5677.json"
 #%%
-def loadDataDf():
+def loadDataDf(res):
     '''Carrega dados do CSV e cria/formata alguns campos '''
-    res =  pd.read_csv('Pagamentos.csv',header =None,names = ['id','data','valorPago','tipoPlano'])
 
     res['vlrpago'] = res.valorPago.apply(lambda x: float(x[2:].replace(',','.'))) 
     res['TipoPlano'] = res.tipoPlano.apply(lambda x:x.split('/')[0]) 
@@ -158,11 +157,12 @@ def formatAndExportToBg(startDF,clientsInfo):
             #df2 = df2.append(pd.DataFrame(data =d,index = [colun]))
             aux = colun
 #%%            
-            
-startDf = loadDataDf()
-startDf = formatDataDf(startDf)
-clientsInfo = loadClientsInfo()
-formatAndExportToBg(startDf,clientsInfo)
+if __name__ == '__main__':  
+    res =  pd.read_csv('Pagamentos.csv',header =None,names = ['id','data','valorPago','tipoPlano'])      
+    startDf = loadDataDf(res)
+    startDf = formatDataDf(startDf)
+    clientsInfo = loadClientsInfo()
+    formatAndExportToBg(startDf,clientsInfo)
 
 
 
