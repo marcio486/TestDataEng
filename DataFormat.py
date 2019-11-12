@@ -69,14 +69,18 @@ def formatCl(keyC,grupoC,DadosClientes):
             if x == 0 : x = 12            #caso seja divisivel por 12 é o mês 12
             if ComprasCliente.mes+l >= 13:#Caso seja maior que 13 significa que são dados do ano seguinte 
                       #ex:'Mt_'+str(1)+'_'+str(2018+1) = Mt_1_2019 -> dados de janeiro de 2019
-                DadosClientes.at[keyC,'Mt_'+str(x)+'_'+str(ComprasCliente.ano+1)] = ComprasCliente.vlrpago/int(ComprasCliente.MesesPlano)
+                DadosClientes.at[keyC,'Mt_'+str(x)+'_'+str(ComprasCliente.ano+1)] = (
+                        #Ex: 300RS em um Plano de 3 meses = 100 reais por mês
+                        ComprasCliente.vlrpago/int(ComprasCliente.MesesPlano) )
                 
-                DadosClientes.at[keyC,'Tipo_'+str(x)+'_'+str(ComprasCliente.ano+1)] = ComprasCliente.TipoPlano
-            else:
-                                                                        #Ex: 300RS em um Plano de 3 meses = 100 reais por mês
-                DadosClientes.at[keyC,'Mt_'+str(x)+'_'+str(ComprasCliente.ano)] = ComprasCliente.vlrpago/int(ComprasCliente.MesesPlano)
+                DadosClientes.at[keyC,'Tipo_'+str(x)+'_'+str(ComprasCliente.ano+1)] =(
+                        ComprasCliente.TipoPlano )
+            else:                                                        
+                DadosClientes.at[keyC,'Mt_'+str(x)+'_'+str(ComprasCliente.ano)] = (
+                        ComprasCliente.vlrpago/int(ComprasCliente.MesesPlano) )
                 
-                DadosClientes.at[keyC,'Tipo_'+str(x)+'_'+str(ComprasCliente.ano)] = ComprasCliente.TipoPlano
+                DadosClientes.at[keyC,'Tipo_'+str(x)+'_'+str(ComprasCliente.ano)] =(
+                        ComprasCliente.TipoPlano )
     return DadosClientes
 
 def removeNaN(DadosClientes):
