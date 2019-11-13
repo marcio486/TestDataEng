@@ -191,16 +191,16 @@ def exportToBg(exportDf):
 if __name__ == '__main__':  
     res =  pd.read_csv('Pagamentos.csv',header =None,names = ['id','data','valorPago','tipoPlano'])      
     loadedDf = loadDataDf(res)
-    loadedDf.to_csv('loadedDf.csv',index=False)
+    #loadedDf.to_csv('loadedDf.csv',index=False)
     
     loadedDfFormated = formatDataDf(loadedDf)
-    loadedDfFormated.to_csv('loadedDfFormated.csv',index=False)
+    #loadedDfFormated.to_csv('loadedDfFormated.csv',index=False)
     
     clientsInfo = loadClientsInfo()
-    clientsInfo.to_csv('clientsInfo.csv',index=False)
+    #clientsInfo.to_csv('clientsInfo.csv',index=False)
     
     exportDf = finalFormat(loadedDfFormated,clientsInfo)
-    exportDf.to_csv('exportDf.csv',index=False) 
+    #exportDf.to_csv('exportDf.csv',index=False) 
     
     exportToBg(exportDf)
     #usado nos testes
