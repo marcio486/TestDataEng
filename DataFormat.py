@@ -1,18 +1,19 @@
 import pandas as pd
 import numpy as np
 import requests
-
+#import os
 #os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="ProjetoTeste-b0a2e18f5677.json"
 #%%
 def loadDataDf(res):
     '''cria/formata alguns campos iniciais'''
     res['vlrpago'] = res.valorPago.apply(lambda x: float(x[2:].replace(',','.'))) 
     res['TipoPlano'] = res.tipoPlano.apply(lambda x:x.split('/')[0]) 
-    res['MesesPlano'] = res.tipoPlano.apply(lambda x:x.split('/')[1])
+    res['MesesPlano'] = res.tipoPlano.apply(lambda x:int(x.split('/')[1]))
     res['data'] = pd.to_datetime(res.data,dayfirst=True)
     res['mes'] = res.data.apply(lambda x: x.month)
     res['dia'] = res.data.apply(lambda x: x.day)
     res['ano'] = res.data.apply(lambda x: x.year)
+    
     return res
 
 #%%
@@ -100,64 +101,91 @@ def finalFormat(loadedDfFormated,clientsInfo):
     aux = ''
     exportDf = pd.DataFrame()
     #df2 = pd.DataFrame()
-    for count,colun in enumerate(loadedDfFormated.columns):
+    for count,colun in enumerate(loadedDfFormated.columns):#Percorrer as colunas em ordem de mês
        
         if colun == 'Mt_8_2016' :
             aux = colun
             continue
         if 'Mt_' in colun:
-            chosen_month = colun
-            back_month = aux
+            chosen_month = colun #Mês em em que os calculos estão sendo realizadso
+            previous_month = aux #Mês anterior
            
+            dfMes = pd.DataFrame()                   
+            dfMes['id'] = loadedDfFormated.id.unique()
+            dfMes = dfMes.set_index('id').sort_index()
+            
+            dfMes['MRR'] = loadedDfFormated[chosen_month]
+            dfMes['Expansion'] = (loadedDfFormated[chosen_month] - loadedDfFormated[previous_month]).apply(lambda x: x if x > 0 else 0)
+            dfMes['Contraction'] = (loadedDfFormated[chosen_month] - loadedDfFormated[previous_month]).apply(lambda x: x if x < 0 else 0)
+            dfMes['Canceled'] = np.where(loadedDfFormated[chosen_month] == 0,loadedDfFormated[previous_month],0)
+            
+            dfMes['aux'] = 0
+            
+            dfMes = checkPrevious(loadedDfFormated,dfMes,previous_month)  
            
-            df = pd.DataFrame()
-            df['id'] = loadedDfFormated.id.unique()
-            df = df.set_index('id').sort_index()
-            df['MRR'] = loadedDfFormated[chosen_month]
-            df['Expansion'] = (loadedDfFormated[chosen_month] - loadedDfFormated[back_month]).apply(lambda x: x if x > 0 else 0)
-            df['Contraction'] = (loadedDfFormated[chosen_month] - loadedDfFormated[back_month]).apply(lambda x: x if x < 0 else 0)
-            df['Canceled'] = np.where(loadedDfFormated[chosen_month] == 0,loadedDfFormated[back_month],0)
-           
-            df['aux'] = 0
-    
-            for col in loadedDfFormated.iteritems():            # verificar se existem vendas anteriores
-                if col[0] == back_month: break
-                elif 'Mt_' in col[0]:
-                    df['aux'] = df['aux'] + col[1].reindex(df.index)
-               
-            df['Ressurection'] = np.where(loadedDfFormated[back_month] == 0,loadedDfFormated[chosen_month],0)
-            df['Ressurection'] = np.where(df['aux'] == 0,0,df['Ressurection'])
-            df['Contraction'] = -np.where(df['Canceled'] == 0,df['Contraction'],0)
-            df['Ativos'] = df.MRR.apply(lambda x: 1 if x > 0 else 0)
+            dfMes['Ressurection'] = np.where(loadedDfFormated[previous_month] == 0,loadedDfFormated[chosen_month],0)
+            dfMes['Ressurection'] = np.where(dfMes['aux'] == 0,0,dfMes['Ressurection'])      #Caso não existam vendas anteriorer ('aux') não faz parte da metrica Ressurection
+            dfMes['Contraction'] = -np.where(dfMes['Canceled'] == 0,dfMes['Contraction'],0)
+            dfMes['Ativos'] = dfMes.MRR.apply(lambda x: 1 if x > 0 else 0)
  
-            df['Data'] = pd.to_datetime('/'.join(chosen_month.split('_')[1:3])).date()
+            dfMes['Data'] = str(pd.to_datetime('/'.join(chosen_month.split('_')[1:3])).date())
             
-            df['cidade'] = clientsInfo.cidade
-            df['estado'] = clientsInfo.estado
-            df['nome'] = clientsInfo.nome
-            df['segmento'] = clientsInfo.segmento
-            
-            df['bronze'] = loadedDfFormated[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Bronze' else 0)
-            df['prata'] = loadedDfFormated[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Prata' else 0)
-            df['ouro'] = loadedDfFormated[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Ouro' else 0)
-            df['platina'] = loadedDfFormated[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Platina' else 0)
-    
-            df = df.reset_index()
-            df.Ressurection = df.Ressurection.astype('int64')
-            df.Contraction = df.Contraction.astype('int64')
-            df.MRR = df.MRR.astype('int64')
-            df.Expansion = df.Expansion.astype('int64')
-            df.Canceled = df.Canceled.astype('int64')
-            df.aux = df.aux.astype('int64')
 
-            exportDf = exportDf.append(df)
+            dfMes = appendClientsInfo(dfMes,clientsInfo)
+            
+            dfMes = appendPlanInfo(dfMes,chosen_month,loadedDfFormated)
+    
+    
+            dfMes = dfMes.reset_index()
+            dfMes = adjustTypes(dfMes)
+
+            exportDf = exportDf.append(dfMes)
             #d = {'mesAno':' '.join(chosen_month.split('_')[1:3]),'MRR':df.MRR.sum(),'Expansion':df.Expansion.sum(),'Contraction':df.Contraction.sum(),'Canceled':df.Canceled.sum(),'TotalAnt':df.aux.sum(),'Ressurection':df.Ressurection.sum(),'Ativos':df.Ativos.sum()}
             #df2 = df2.append(pd.DataFrame(data =d,index = [colun]))
             aux = colun
-    return exportDf.reset_index()
+    
+    return exportDf.reset_index(drop = True)
+
+def checkPrevious(loadedDfFormated,dfMes,previous_month):
+    '''  verificar se existem vendas anteriores ao mês atual '''
+    for col in loadedDfFormated.iteritems():           
+                if col[0] == previous_month: break
+                elif 'Mt_' in col[0]:
+                    dfMes['aux'] = dfMes['aux'] + col[1].reindex(dfMes.index)
+    return dfMes
+
+def appendClientsInfo(dfMes,clientsInfo):
+    '''Insere informações sobre o plano '''
+    dfMes['cidade'] = clientsInfo.cidade
+    dfMes['estado'] = clientsInfo.estado
+    dfMes['nome'] = clientsInfo.nome
+    dfMes['segmento'] = clientsInfo.segmento
+    return dfMes
+
+def appendPlanInfo(dfMes,chosen_month,loadedDfFormated):
+    '''Insere informações adicionais de cada cliente '''
+    dfMes['bronze'] = loadedDfFormated[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Bronze' else 0)
+    dfMes['prata'] = loadedDfFormated[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Prata' else 0)
+    dfMes['ouro'] = loadedDfFormated[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Ouro' else 0)
+    dfMes['platina'] = loadedDfFormated[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Platina' else 0)
+    return dfMes
+
+def adjustTypes(dfMes):
+    '''Ajusta tipos para exportação (só pra garantir) '''
+    dfMes.Ressurection = dfMes.Ressurection.astype('int64')
+    dfMes.Contraction = dfMes.Contraction.astype('int64')
+    dfMes.MRR = dfMes.MRR.astype('int64')
+    dfMes.Expansion = dfMes.Expansion.astype('int64')
+    dfMes.Canceled = dfMes.Canceled.astype('int64')
+    dfMes.aux = dfMes.aux.astype('int64')
+    return dfMes
+
+#%%
     
 def exportToBg(exportDf):
+    '''Envia os dados formatadas para o GBQ '''
     exportDf.to_gbq(destination_table ='COnjuntoTeste.DadosMesesClientesSaaS',project_id ='projetoteste-256620',if_exists = 'replace')
+    
 #%%       
     
 if __name__ == '__main__':  
