@@ -100,6 +100,7 @@ def loadClientsInfo():
 def finalFormat(loadedDfFormated,clientsInfo):
     aux = ''
     exportDf = pd.DataFrame()
+    loadedDfFormated.index  = loadedDfFormated.id.values
     #df2 = pd.DataFrame()
     for count,colun in enumerate(loadedDfFormated.columns):#Percorrer as colunas em ordem de mês
        
@@ -109,10 +110,11 @@ def finalFormat(loadedDfFormated,clientsInfo):
         if 'Mt_' in colun:
             chosen_month = colun #Mês em em que os calculos estão sendo realizadso
             previous_month = aux #Mês anterior
-           
-            dfMes = pd.DataFrame()                   
+
+            dfMes = pd.DataFrame()
+
             dfMes['id'] = loadedDfFormated.id.unique()
-            dfMes = dfMes.set_index('id').sort_index()
+            dfMes = dfMes.set_index('id')
             
             dfMes['MRR'] = loadedDfFormated[chosen_month]
             dfMes['Expansion'] = (loadedDfFormated[chosen_month] - loadedDfFormated[previous_month]).apply(lambda x: x if x > 0 else 0)
@@ -137,6 +139,7 @@ def finalFormat(loadedDfFormated,clientsInfo):
     
     
             dfMes = dfMes.reset_index()
+            dfMes = dfMes.fillna(0)
             dfMes = adjustTypes(dfMes)
 
             exportDf = exportDf.append(dfMes)
@@ -191,20 +194,21 @@ def exportToBg(exportDf):
 if __name__ == '__main__':  
     res =  pd.read_csv('Pagamentos.csv',header =None,names = ['id','data','valorPago','tipoPlano'])      
     loadedDf = loadDataDf(res)
-    #loadedDf.to_csv('loadedDf.csv',index=False)
+    #loadedDf.to_csv('loadedDfTest.csv',index=False)
     
     loadedDfFormated = formatDataDf(loadedDf)
-    #loadedDfFormated.to_csv('loadedDfFormated.csv',index=False)
+    #loadedDfFormated.to_csv('loadedDfFormatedTest.csv',index=False)
     
     clientsInfo = loadClientsInfo()
-    #clientsInfo.to_csv('clientsInfo.csv',index=False)
+    #clientsInfo.to_csv('clientsInfoTest.csv',index=False)
     
     exportDf = finalFormat(loadedDfFormated,clientsInfo)
-    #exportDf.to_csv('exportDf.csv',index=False) 
+    #exportDf.to_csv('exportDfTest.csv',index=False) 
     
     exportToBg(exportDf)
     #usado nos testes
-   
+    #res =  pd.read_csv('Pagamentos.csv',nrows = 500,header =None,names = ['id','data','valorPago','tipoPlano']) 
+    #res.to_csv('pagamentosTeste500.csv',index = False,header = False)
     
     
 
