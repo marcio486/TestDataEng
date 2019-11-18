@@ -121,7 +121,7 @@ def finalFormat(loadedDfFormated,clientsInfo):
            
             dfMes = calcDependetMetrics(dfMes,chosen_month,previous_month)
  
-            dfMes['Data'] = str(pd.to_datetime('/'.join(chosen_month.split('_')[1:3])).date())
+            dfMes = formatDate(dfMes,chosen_month)
             
             dfMes = appendClientsInfo(dfMes,clientsInfo)
             
@@ -144,14 +144,6 @@ def calcIndependetMetrics(dfMes,chosen_month,previous_month):
     dfMes['Canceled'] = np.where(loadedDfFormated[chosen_month] == 0,loadedDfFormated[previous_month],0)
     return dfMes
 
-def calcDependetMetrics(dfMes,chosen_month,previous_month):
-    '''Calcula métricas independetes '''
-    dfMes['Ressurection'] = np.where(loadedDfFormated[previous_month] == 0,loadedDfFormated[chosen_month],0)
-    dfMes['Ressurection'] = np.where(dfMes['aux'] == 0,0,dfMes['Ressurection'])      #Caso não existam vendas anteriorer ('aux') não faz parte da metrica Ressurection
-    dfMes['Contraction'] = -np.where(dfMes['Canceled'] == 0,dfMes['Contraction'],0)
-    dfMes['Ativos'] = dfMes.MRR.apply(lambda x: 1 if x > 0 else 0)
-    return dfMes
-
 def checkPrevious(loadedDfFormated,dfMes,previous_month):
     '''  verificar se existem vendas anteriores ao mês atual '''
     dfMes['aux'] = 0
@@ -161,12 +153,25 @@ def checkPrevious(loadedDfFormated,dfMes,previous_month):
                     dfMes['aux'] = dfMes['aux'] + col[1].reindex(dfMes.index)
     return dfMes
 
+def calcDependetMetrics(dfMes,chosen_month,previous_month):
+    '''Calcula métricas independetes '''
+    dfMes['Ressurection'] = np.where(loadedDfFormated[previous_month] == 0,loadedDfFormated[chosen_month],0)
+    dfMes['Ressurection'] = np.where(dfMes['aux'] == 0,0,dfMes['Ressurection'])      #Caso não existam vendas anteriorer ('aux') não faz parte da metrica Ressurection
+    dfMes['Contraction'] = -np.where(dfMes['Canceled'] == 0,dfMes['Contraction'],0)
+    dfMes['Ativos'] = dfMes.MRR.apply(lambda x: 1 if x > 0 else 0)
+    return dfMes
+
 def appendClientsInfo(dfMes,clientsInfo):
     '''Insere informações sobre o plano '''
     dfMes['cidade'] = clientsInfo.cidade
     dfMes['estado'] = clientsInfo.estado
     dfMes['nome'] = clientsInfo.nome
     dfMes['segmento'] = clientsInfo.segmento
+    return dfMes
+
+def formatDate(dfMes,chosen_month):
+    '''Formata data '''
+    dfMes['Data'] = str(pd.to_datetime('/'.join(chosen_month.split('_')[1:3])).date())
     return dfMes
 
 def appendPlanInfo(dfMes,chosen_month,loadedDfFormated):
