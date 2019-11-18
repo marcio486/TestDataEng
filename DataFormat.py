@@ -116,8 +116,6 @@ def finalFormat(loadedDfFormated,clientsInfo):
             dfMes = dfMes.set_index('id')
             
             dfMes = calcIndependetMetrics(dfMes,chosen_month,previous_month)
-             
-            dfMes['aux'] = 0
             
             dfMes = checkPrevious(loadedDfFormated,dfMes,previous_month)  
            
@@ -130,7 +128,7 @@ def finalFormat(loadedDfFormated,clientsInfo):
             dfMes = appendPlanInfo(dfMes,chosen_month,loadedDfFormated)
                
             dfMes = adjustTypes(dfMes)
-
+            
             exportDf = exportDf.append(dfMes)
             #d = {'mesAno':' '.join(chosen_month.split('_')[1:3]),'MRR':df.MRR.sum(),'Expansion':df.Expansion.sum(),'Contraction':df.Contraction.sum(),'Canceled':df.Canceled.sum(),'TotalAnt':df.aux.sum(),'Ressurection':df.Ressurection.sum(),'Ativos':df.Ativos.sum()}
             #df2 = df2.append(pd.DataFrame(data =d,index = [colun]))
@@ -156,6 +154,7 @@ def calcDependetMetrics(dfMes,chosen_month,previous_month):
 
 def checkPrevious(loadedDfFormated,dfMes,previous_month):
     '''  verificar se existem vendas anteriores ao mês atual '''
+    dfMes['aux'] = 0
     for col in loadedDfFormated.iteritems():           
                 if col[0] == previous_month: break
                 elif 'Mt_' in col[0]:
