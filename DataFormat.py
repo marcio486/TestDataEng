@@ -115,11 +115,12 @@ def finalFormat(loadedDfFormated,clientsInfo):
             dfMes['id'] = loadedDfFormated.id.unique()
             dfMes = dfMes.set_index('id')
             
-            dfMes = calcIndependetMetrics(dfMes,chosen_month,previous_month)
+            
+            dfMes = calcIndependentMetrics(dfMes,chosen_month,previous_month)
             
             dfMes = checkPrevious(loadedDfFormated,dfMes,previous_month)  
            
-            dfMes = calcDependetMetrics(dfMes,chosen_month,previous_month)
+            dfMes = calcDependentMetrics(dfMes,chosen_month,previous_month)
  
             dfMes = formatDate(dfMes,chosen_month)
             
@@ -136,7 +137,7 @@ def finalFormat(loadedDfFormated,clientsInfo):
     
     return exportDf.reset_index(drop = True)
 
-def calcIndependetMetrics(dfMes,chosen_month,previous_month):
+def calcIndependentMetrics(dfMes,chosen_month,previous_month):
     '''Calcula métricas independetes '''
     dfMes['MRR'] = loadedDfFormated[chosen_month]
     dfMes['Expansion'] = (loadedDfFormated[chosen_month] - loadedDfFormated[previous_month]).apply(lambda x: x if x > 0 else 0)
@@ -153,7 +154,7 @@ def checkPrevious(loadedDfFormated,dfMes,previous_month):
                     dfMes['aux'] = dfMes['aux'] + col[1].reindex(dfMes.index)
     return dfMes
 
-def calcDependetMetrics(dfMes,chosen_month,previous_month):
+def calcDependentMetrics(dfMes,chosen_month,previous_month):
     '''Calcula métricas independetes '''
     dfMes['Ressurection'] = np.where(loadedDfFormated[previous_month] == 0,loadedDfFormated[chosen_month],0)
     dfMes['Ressurection'] = np.where(dfMes['aux'] == 0,0,dfMes['Ressurection'])      #Caso não existam vendas anteriorer ('aux') não faz parte da metrica Ressurection
