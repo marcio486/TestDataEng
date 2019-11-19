@@ -115,7 +115,6 @@ def finalFormat(loadedDfFormated,clientsInfo):
             dfMes['id'] = loadedDfFormated.id.unique()
             dfMes = dfMes.set_index('id')
             
-            
             dfMes = calcIndependentMetrics(dfMes,chosen_month,previous_month)
             
             dfMes = checkPrevious(loadedDfFormated,dfMes,previous_month)  
@@ -176,7 +175,7 @@ def formatDate(dfMes,chosen_month):
     return dfMes
 
 def appendPlanInfo(dfMes,chosen_month,loadedDfFormated):
-    '''Insere informações adicionais de cada cliente '''
+    '''Insere informações adicionais de plano '''
     dfMes['bronze'] = loadedDfFormated[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Bronze' else 0)
     dfMes['prata'] = loadedDfFormated[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Prata' else 0)
     dfMes['ouro'] = loadedDfFormated[chosen_month.replace('Mt','Tipo')].apply(lambda x : 1 if x == 'Ouro' else 0)
