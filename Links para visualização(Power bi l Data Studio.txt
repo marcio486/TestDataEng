@@ -1,5 +1,0 @@
-Power bi->
-https://app.powerbi.com/view?r=eyJrIjoiNmY1NDRkZDEtZGY0MS00ZTBkLTg3ZGEtM2Y5M2Q4MTBhYTQ3IiwidCI6IjZjOGJlMGRmLTE2OWMtNGVmNy04YjI4LTdlOTkxYWQ5ZTg2MSJ9
-
-Google data Studio ->
-https://datastudio.google.com/s/h6HV5bizjRY
